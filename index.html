@@ -2,35 +2,97 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDFTK Web Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1, h2 {
+            color: #444;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #e9f7fe;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
 </head>
 <body>
-    <h1>PDFTK Web Interface</h1>
-    <form id="pdftkForm">
-        <label for="command">Enter PDFTK Command:</label><br>
-        <input type="text" id="command" name="command" size="50"><br><br> 
-        <button type="button" onclick="submitCommand()">Submit Command</button>
-    </form>
-    <h2>Collate Even and Odd Pages</h2>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <label for="even_pdf">Upload Even Pages PDF:</label>
-        <input type="file" id="even_pdf" name="even_pdf" accept=".pdf" required><br><br> 
-        <label for="odd_pdf">Upload Odd Pages PDF:</label> 
-        <input type="file" id="odd_pdf" name="odd_pdf" accept=".pdf" required><br><br>
-        <button type="button" onclick="uploadFiles()">Upload and Collate</button>
-    </form> 
+    <div class="container">
+        <h1>PDFTK Web Interface</h1>
+        <div class="form-group">
+            <label for="command">Enter PDFTK Command:</label>
+            <input type="text" id="command" name="command">
+            <button type="button" onclick="submitCommand()">Submit Command</button>
+        </div>
 
-    <div id="output"></div> 
+        <h2>Collate Even and Odd Pages</h2>
+        <div class="form-group">
+            <label for="even_pdf">Upload Even Pages PDF:</label>
+            <input type="file" id="even_pdf" name="even_pdf" accept=".pdf" required>
+        </div>
+        <div class="form-group">
+            <label for="odd_pdf">Upload Odd Pages PDF:</label>
+            <input type="file" id="odd_pdf" name="odd_pdf" accept=".pdf" required>
+        </div>
+        <button type="button" onclick="uploadFiles()">Upload and Collate</button>
+
+        <div id="output"></div>
+    </div>
 
     <script>
         function submitCommand() {
-            var command = document.getElementById("command").value; 
+            var command = document.getElementById("command").value;
             fetch('/pdftk', {
-                method: 'POST', 
-                headers: { 
-                    'Content-Type': 
-                    'application/json',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({command: command})
             })
@@ -38,26 +100,26 @@
             .then(data => {
                 document.getElementById("output").innerHTML = "<h3>Output:</h3><pre>" + data.output + "</pre>";
             })
-            .catch((error) => { 
+            .catch((error) => {
                 console.error('Error:', error);
             });
         }
 
         function uploadFiles() {
             const formData = new FormData();
-            const evenPdf = document.getElementById('even_pdf').files[0]; 
-            const oddPdf = document.getElementById('odd_pdf').files[0]; 
-            
-            formData.append('even_pdf', evenPdf); 
-            formData.append('odd_pdf', oddPdf); 
-            
+            const evenPdf = document.getElementById('even_pdf').files[0];
+            const oddPdf = document.getElementById('odd_pdf').files[0];
+
+            formData.append('even_pdf', evenPdf);
+            formData.append('odd_pdf', oddPdf);
+
             fetch('/upload-and-collate', {
-                method: 'POST', 
+                method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
-                if (data.output_pdf) { 
+                if (data.output_pdf) {
                     document.getElementById("output").innerHTML = "<h3>Output:</h3><pre>Collated PDF created: <a href='" + data.output_pdf + "' download>Download Collated PDF</a></pre>";
                 } else {
                     document.getElementById("output").innerHTML = "<h3>Error:</h3><pre>" + data.error + "</pre>";
@@ -70,3 +132,4 @@
     </script>
 </body>
 </html>
+
