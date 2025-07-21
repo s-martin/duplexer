@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>PDFTK Web Interface</title>
+</head>
+<body>
+    <h1>PDFTK Web Interface</h1>
+    <form id="pdftkForm">
+        <label for="command">Enter PDFTK Command:</label><br>
+        <input type="text" id="command" name="command" size="50"><br><br> 
+        <button type="button" onclick="submitCommand()">Submit Command</button>
+    </form>
+    <h2>Collate Even and Odd Pages</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="even_pdf">Upload Even Pages PDF:</label>
+        <input type="file" id="even_pdf" name="even_pdf" accept=".pdf" required><br><br> 
+        <label for="odd_pdf">Upload Odd Pages PDF:</label> 
+        <input type="file" id="odd_pdf" name="odd_pdf" accept=".pdf" required><br><br>
+        <button type="button" onclick="uploadFiles()">Upload and Collate</button>
+    </form> 
+
+    <div id="output"></div> 
+
+    <script>
+        function submitCommand() {
+            var command = document.getElementById("command").value; 
+            fetch('/pdftk', {
+                method: 'POST', 
+                headers: { 
+                    'Content-Type': 
+                    'application/json',
+                },
+                body: JSON.stringify({command: command})
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("output").innerHTML = "<h3>Output:</h3><pre>" + data.output + "</pre>";
+            })
+            .catch((error) => { 
+                console.error('Error:', error);
+            });
+        }
+
+        function uploadFiles() {
+            const formData = new FormData();
+            const evenPdf = document.getElementById('even_pdf').files[0]; 
+            const oddPdf = document.getElementById('odd_pdf').files[0]; 
+            
+            formData.append('even_pdf', evenPdf); 
+            formData.append('odd_pdf', oddPdf); 
+            
+            fetch('/upload-and-collate', {
+                method: 'POST', 
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.output_pdf) { 
+                    document.getElementById("output").innerHTML = "<h3>Output:</h3><pre>Collated PDF created: <a href='" + data.output_pdf + "' download>Download Collated PDF</a></pre>";
+                } else {
+                    document.getElementById("output").innerHTML = "<h3>Error:</h3><pre>" + data.error + "</pre>";
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
