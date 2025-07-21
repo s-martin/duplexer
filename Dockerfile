@@ -9,16 +9,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends -qq \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 --quiet install flask
+RUN pip3 --quiet install flask watchdog
 
 RUN mkdir -p /app/uploads /app/outputs
 
 # add app and website
 COPY app.py /app/app.py 
 COPY index.html /app/templates/index.html
+COPY watch_directory.py /app/watch_directory.py
 
 WORKDIR /app
 
 EXPOSE 5000
 
-CMD ["python3", "app.py"]
+CMD python3 watch_directory.py & python3 app.py
